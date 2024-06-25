@@ -26,13 +26,13 @@ jobs:
           key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-
-
       - name: Build Docker image
         run: docker build -t my-django-app .
 
       - name: Run Docker container
         run: docker run -d -e DATABASE_URL=${{ env.DATABASE_URL }} --name my-django-container my-django-app
 
+      
       - name: Run Django tests
         run: docker exec my-django-container python manage.py test
 

@@ -33,9 +33,6 @@ jobs:
       - name: Run Docker container
         run: docker run -d -e DATABASE_URL=${{ env.DATABASE_URL }} --name my-django-container my-django-app
 
-      - name: Wait for Postgres
-        run: docker run --rm --network container:my-django-container appropriate/curl --retry 5 --retry-delay 5 --retry-connrefused http://localhost:5432
-
       - name: Run Django tests
         run: docker exec my-django-container python manage.py test
 

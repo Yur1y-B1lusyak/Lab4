@@ -1,0 +1,46 @@
+name: Docker Django Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Build Docker image
+        run: docker build -t my-django-app .
+
+      - name: Run Docker container
+        run: docker run -d -e DATABASE_URL=${{ env.DATABASE_URL }} --name my-django-container my-django-app
+
+      - name: Wait for Postgres
+        run: docker run --rm --network container:my-django-container appropriate/curl --retry 5 --retry-delay 5 --retry-connrefused http://localhost:5432
+
+      - name: Run Django tests
+        run: docker exec my-django-container python manage.py test
+
+      - name: Stop Docker container
+        run: docker stop my-django-container
+
+      - name: Remove Docker container
+        run: docker rm my-django-container

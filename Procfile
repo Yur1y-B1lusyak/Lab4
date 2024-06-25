@@ -1,0 +1,1 @@
+web gunicorn TouristBlog.wsgi:application --log-file -
